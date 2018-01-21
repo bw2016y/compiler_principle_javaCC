@@ -1,0 +1,664 @@
+/**
+ * JJTree template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */
+options
+{
+  static = false;
+}
+
+PARSER_BEGIN(BwyGrammar)
+package dd;
+import utils.*;
+public class BwyGrammar
+{  VariableNameGenerator namegivener=new VariableNameGenerator();
+  public  static  QTTable mytable=new QTTable();
+  public static SymTab mySymTab =new SymTab ();
+  public static void main(String args [])
+  {
+    System.out.println("Reading from standard input...");
+    System.out.print("Enter an expression like \"1+(2+3)*var;\" :");
+    BwyGrammar t=new BwyGrammar(System.in);
+    try
+    { 
+      SimpleNode n = t.Start();
+      n.dump("");
+      System.out.println("Thank you.");
+    }
+    catch (Exception e)
+    {
+      System.out.println("Oops.");
+      System.out.println(e.getMessage());
+    }
+  }
+}
+
+PARSER_END(BwyGrammar) 
+
+ 
+
+ 
+
+
+
+
+
+/*
+     Ïë³Ô½È×Ó£¬Ïë³Ô»ð¹ø¡£
+   2018.1.13
+*/
+
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| < "//" (~[ "\n", "\r" ])*
+    (
+      "\n"
+    | "\r"
+    | "\r\n"
+    ) >
+| < "/*" (~[ "*" ])* "*"
+    (
+      ~[ "/" ] (~[ "*" ])* "*"
+    )*
+    "/" >
+}
+
+TOKEN : /* OPERATORS */
+{
+  	<ASSIGN:"=">
+  | <GT:">">
+  | <LT:"<">
+  | <EQ:"==">
+  | <LE:"<=">
+  | <GE:">=">
+  | <NE:"!=">
+  | <ADD:"++">
+  | <MINUSD:"--">
+  | <REM:"%">
+  | <AND:"&&">
+  | <OR:"||">
+  | < PLUS: "+" >
+  |	< MINUS: "-" >
+  |	< MULTIPLY: "*" >
+  |	< DIVIDE: "/" >
+}
+TOKEN:   /*KEY WORDS*/
+{
+	
+<BOOLEAN:"boolean">
+  |<CHAR:"char">
+  |<BYTE:"byte">
+  |<SHORT:"short">
+  | <INT:"int">
+  |<LONG:"long">
+  |<FLOAT:"float">
+  |<DOUBLE:"double">
+  
+  | <BREAK:"break">
+  | <CASE:"case">
+  | <CONST:"const">
+  | <CONTINUE:"continue">
+  | <_DEFAULT:"default">
+  | <DO:"do">
+  | <TYPEDEF:"typedef">
+  | <ELSE:"else">
+  | <FOR:"for">
+  | <IF:"if">
+  | <RETURN:"return">
+  | <SWITCH:"switch">
+  | <VOID:"void">
+  | <WHILE:"while">
+  | <MAIN:"main">
+}
+
+TOKEN:   /* others */
+{
+  <LC:"(">
+  | <RC:")">
+  | <LM:"[">
+  | <RM:"]">
+  | <LB:"{">
+  | <RB:"}">
+}
+
+
+
+
+TOKEN : /* LITERALS */
+{
+  < INTEGER_LITERAL :
+    < DECIMAL_LITERAL > ([ "l", "L" ])?
+  | < HEX_LITERAL > ([ "l", "L" ])?
+  | < OCTAL_LITERAL > ([ "l", "L" ])? 
+    >
+| < #DECIMAL_LITERAL : [ "1"-"9" ] ([ "0"-"9" ])* >
+| < #HEX_LITERAL : "0" [ "x", "X" ] ([ "0"-"9", "a"-"f", "A"-"F" ])+ >
+| < #OCTAL_LITERAL : "0" ([ "0"-"7" ])* >
+}
+
+TOKEN : /* IDENTIFIERS */
+{
+  < IDENTIFIER :
+    < LETTER >
+    (
+      < LETTER >
+    | < DIGIT >
+    )* >
+| < #LETTER : [ "_", "a"-"z", "A"-"Z" ] >
+| < #DIGIT : [ "0"-"9" ] >
+}
+
+
+/* bwy part */
+
+
+
+SimpleNode Start() :
+{}
+{
+     Program()
+  {
+    return jjtThis;
+  }
+}
+
+
+void Program() :
+{}
+{
+   <VOID > <MAIN > <LC > < RC >
+    < LB >  (StatementBlock())*  < RB >
+    < EOF >
+    {
+       System.out.print("\t\t\tAccepted \n");
+       //
+       //Ô¤Áô
+    }
+}
+void StatementBlock() :
+{}
+{
+        
+      statement()
+    |
+
+      < LB > 
+      (
+        StatementBlock()
+      )*
+     < RB >
+
+}
+
+
+void  statement() :
+{}
+{
+   loopStatement() 
+|  seqStatement()
+|  conStatement()
+}
+
+
+
+void  loopStatement() :
+{
+  int tag=QTInfo.innerIdSeqen;
+  
+  int tag2;
+ }
+{
+    
+     < WHILE >
+   < LC >  BoolStatement()
+  {
+    mytable.PullBack(QTInfo.innerIdSeqen-1,QTInfo.innerIdSeqen+1);
+    tag2=QTInfo.innerIdSeqen;
+     
+  }
+    < RC >
+    StatementBlock()
+    {
+        
+     
+       
+       mytable.addQTInfo(new QTInfo("J","_","_",tag+1));
+        //System.out.print(QTInfo.innerIdSeqen );
+        mytable.PullBack(tag2,QTInfo.innerIdSeqen+1);
+    }
+}
+
+
+void  BoolStatement()  :
+{
+  int tag;
+}
+{
+   BoolAndExpression()
+  (
+    { 
+      tag=QTInfo.innerIdSeqen;
+     // System.out.print("!"+QTInfo.innerIdSeqen );
+       mytable.PullBack( tag ,tag+1);
+    }
+    < OR > BoolAndExpression() {
+      mytable.get_sp(QTInfo.innerIdSeqen-1  ).result=Integer.toString( tag-1);
+      tag=QTInfo.innerIdSeqen;
+      }
+  )*
+}
+void BoolAndExpression():
+{
+  int tag;
+}
+{
+  (
+      LOOKAHEAD(2)
+    < LB > BoolStatement()< RB > 
+    |ConExpression() 
+  )
+  (
+    {
+       tag=QTInfo.innerIdSeqen;
+       // System.out.print("!"+QTInfo.innerIdSeqen );
+      mytable.PullBack(QTInfo.innerIdSeqen-1,QTInfo.innerIdSeqen+1);
+    }
+    < AND >
+    (
+      LOOKAHEAD(2)
+      < LB > BoolStatement()< RB >
+      |ConExpression() 
+    )
+    {
+    mytable.get_sp(QTInfo.innerIdSeqen).result=Integer.toString(tag);
+      tag = QTInfo.innerIdSeqen;
+         System.out.print("!"+QTInfo.innerIdSeqen );
+    }
+  )*
+}
+void  conStatement() :
+{
+   int tag1,tag2=0;
+   int haselse=0;  
+}
+{
+    < IF >
+    < LC >  BoolStatement()  < RC >
+     {
+         tag1=QTInfo.innerIdSeqen;
+     mytable.PullBack(QTInfo.innerIdSeqen-1,QTInfo.innerIdSeqen+1);
+        
+     }
+    StatementBlock()
+     {
+      
+       
+       
+     
+     }
+    
+  
+     (
+         LOOKAHEAD(2)
+         < ELSE >
+         {
+              haselse=1;
+              tag2=QTInfo.innerIdSeqen;
+              System.out.println(QTInfo.innerIdSeqen);
+              mytable.addQTInfo(new QTInfo("J","_","_",0));
+             
+         }
+          StatementBlock()
+
+           
+           
+     )?
+    {
+       if(haselse==0)
+    mytable.PullBack(tag1,QTInfo.innerIdSeqen-1);
+    
+   else {
+        
+        mytable.PullBack(tag1 , QTInfo.innerIdSeqen+1);
+        mytable.get_sp(tag2+1).result=Integer.toString(QTInfo.innerIdSeqen+1);
+      
+      }
+      
+     }
+    
+}
+
+void  ConExpression() :
+{
+  String fisrt=null,second=null;
+  Token op=null;
+  int tag;
+}
+{
+      fisrt=Expression()
+  (
+     (
+        op=">"
+    |   op= "<"
+    |   op=">="
+    |   op="<="
+    |  op= "=="
+    |  op= "!="
+    )
+    
+      second=Expression()      ) ?
+   
+    {
+    if(op==null) mytable.addQTInfo(new QTInfo("Jnz",fisrt,"_",QTInfo.innerIdSeqen+3));
+    else mytable.addQTInfo(new QTInfo("J"+op.image,fisrt,second,QTInfo.innerIdSeqen+3));
+    mytable.addQTInfo(new QTInfo("J","_","_",-1));
+  }
+}
+
+void  seqStatement() :
+{}
+{
+   (
+      decStatement()
+   |  assStatement()
+   ) ";"
+}
+
+void decStatement() :
+{
+ Token stype;
+ Token sid;
+  
+ int demons=0;
+ Token demon1=new Token();
+ Token demon2=new Token();
+ demon1.image="0";
+ demon2.image="0";
+}
+{
+     stype= type()     
+     sid=Identifier_dec()
+     (  "[" demon1=Integer() "]" { demons ++;}
+         
+       (
+         "["demon2=Integer()"]"{ demons ++;}
+       ) ?  
+     ) ?
+       {
+         if(demons!=0)
+         { ArrayInfo arrinfo=new  ArrayInfo(stype.image, sid.image,
+          "beginLine :"+ sid.beginLine+" beginColumn "+sid.beginColumn+" ",
+          demons, Integer.parseInt(demon1.image)   ,   Integer.parseInt(demon2.image));
+         demons=0;
+         demon1.image="0";
+         demon2.image="0";
+              mySymTab.addArrInfo(arrinfo);
+         }
+         else {
+            SymInfo syminfo=new  SymInfo(stype.image,sid.image,"beginLine :"+ sid.beginLine+" beginColumn "+sid.beginColumn+" ");
+            mySymTab.addSymInfo(syminfo);
+         }
+       
+             
+       }
+        
+   (
+    (
+      ","
+    )
+    sid= Identifier_dec()
+     (  "["demon1=Integer()"]" { demons ++;}
+         
+       (
+         "["demon2=Integer()"]"{ demons ++;}
+       ) ?  
+     ) ?
+     {
+            if(demons!=0)
+         { ArrayInfo arrinfo2=new  ArrayInfo(stype.image, sid.image,
+          "beginLine :"+ sid.beginLine+" beginColumn "+sid.beginColumn+" ",
+          demons, Integer.parseInt(demon1.image)   ,   Integer.parseInt(demon2.image));
+         demons=0;
+         demon1.image="0";
+         demon2.image="0";
+              mySymTab.addArrInfo(arrinfo2);
+         }
+         else {
+            SymInfo syminfo2=new  SymInfo(stype.image,sid.image,"beginLine :"+ sid.beginLine+" beginColumn "+sid.beginColumn+" ");
+            mySymTab.addSymInfo(syminfo2);
+         }
+
+        }
+   )* 
+}
+void  assStatement() :
+{
+  String  first;
+  String second;
+  Token tk;
+}
+{
+     
+  first=  Identifier_ass()
+  tk= < ASSIGN >
+  second=  Expression()
+  {
+     if(first.indexOf("[")!=-1) {
+    System.out.println("[]"+tk.image+" "+second+" "+"_"+" "+first);
+     QTInfo qt=new QTInfo("[]"+tk.image,second,"_",first);
+       mytable.addQTInfo(qt);  
+        }
+    else if(second.indexOf("[")!=-1) {
+    System.out.println(tk.image+"[] "+second+" "+"_"+" "+first);
+     QTInfo qt=new QTInfo( tk.image+"[]",second,"_",first);
+       mytable.addQTInfo(qt);  
+        }  
+     else {
+     System.out.println(tk.image+" "+second+" "+"_"+" "+first);
+     QTInfo qt=new QTInfo(tk.image,second,"_",first);
+       mytable.addQTInfo(qt);  
+       }
+    
+  }
+  
+}
+Token  Identifier_dec() :
+{
+ Token t;
+}
+{
+  t= < IDENTIFIER >
+  {
+    return t;
+  }
+}
+
+String Identifier_ass() :
+{
+ Token t;
+ int demons=0;
+ Token demon1=new Token();
+ Token demon2=new Token();
+ demon1.image="0";
+ demon2.image="0";
+}
+{
+  t= < IDENTIFIER >
+     (  "[" demon1=Integer() "]" { demons ++;}
+         
+       (
+         "["demon2=Integer()"]"{ demons ++;}
+       ) ?  
+     ) ?
+  {
+    
+      if(demons!=0) {
+    mySymTab.ArrUndefineCheck(t.image,"beginLine :"+ t.beginLine+" beginColumn "+t.beginColumn+" "
+    ,demons, Integer.parseInt(demon1.image)   ,
+    Integer.parseInt(demon2.image) );
+        }
+      else {
+mySymTab.SymUndefineCheck(t.image,"beginLine :"+ t.beginLine+" beginColumn "+t.beginColumn+"  ");
+        }
+   
+  }
+  {
+      if(demons!=0) {
+     if(demons==1)
+         return  t.image+"["+demon1.image+"]";
+     if(demons==2)
+         return  t.image+"["+demon1.image+"]"+"["+demon2.image+"]";
+        }
+      else {
+
+        return  t.image;
+        
+         }
+    
+  }
+}
+
+Token type() :
+{
+  Token t ;
+}
+{
+
+  (
+   t= < INT >
+  |t= <FLOAT >
+  |t= < BOOLEAN >
+  |t=<CHAR>
+  |t= <BYTE>
+  |t= <SHORT>
+  |t= <LONG>
+  |t= <DOUBLE>
+  )  
+   
+  
+  {
+    return t ;
+  }
+}
+
+
+
+/*default part */
+ 
+
+String  Expression() :
+{String val;}
+{
+  val=  AdditiveExpression()
+  {
+   return val;
+ }
+}
+
+String AdditiveExpression() :
+{
+  String first;
+  String  second;
+  Token tk;
+  String temp;
+}
+{
+  first=MultiplicativeExpression()
+  {
+    temp=first;
+  }
+  (
+    (
+      tk="+"
+    | tk= "-"
+    )
+   second= MultiplicativeExpression()
+   {
+     temp=VariableNameGenerator.genVariableName();
+     System.out.println(tk.image+" "+first+" "+second+" "+temp);
+      QTInfo qt=new QTInfo(tk.image,first,second,temp);
+           mytable.addQTInfo(qt);
+     first=temp;
+   }
+  )*
+  {
+
+  return temp;
+   
+ }
+}
+
+String MultiplicativeExpression() :
+{
+   Token tk;
+String first;
+String second;
+String temp;
+ }
+{
+   first=UnaryExpression()
+   {
+    temp=first;
+  }
+  (
+    (
+     tk= "*"
+    |tk= "/"
+    |tk= "%"
+    )
+    second= UnaryExpression()
+    {
+      temp=VariableNameGenerator.genVariableName();
+      System.out.println(tk.image+" "+first+" "+second+" "+temp);
+
+      QTInfo qt=new QTInfo(tk.image,first,second,temp);
+           mytable.addQTInfo(qt);
+
+      
+      first=temp;
+    }
+  )*
+   {
+    return temp;
+  }
+}
+
+String  UnaryExpression() :
+{
+  String val=null;
+  Token t=null ;
+}
+{
+(
+   "(" val=Expression() ")"
+| val= Identifier_ass()
+| t= Integer()
+)  
+{
+    //System.out.println(val);
+    if(val!=null)
+    { return val;}
+    return t.image;
+    
+}
+
+}
+
+void Identifier() :
+{}
+{
+  < IDENTIFIER >
+}
+
+Token Integer() :
+{Token val;}
+{
+  val=< INTEGER_LITERAL >
+  {
+    return val;
+  }
+}

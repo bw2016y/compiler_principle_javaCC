@@ -1,0 +1,30 @@
+ void main() {
+  
+  int a,b,c;
+  int a;
+  int A[4][5];
+  int B[5][4];
+  int A[10][10];
+  
+  
+  C[2][4]=3;
+  d=7;
+  
+  
+  if(a>b&&c||b==c)
+  {
+    b=11;
+  }
+  else{
+    B[3][3]=2;
+  }
+  
+  while(b<c||a>b&&a)
+  {
+    a=B[2][22];
+  }
+   
+  
+  
+}
+

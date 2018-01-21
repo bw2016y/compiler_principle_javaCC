@@ -1,0 +1,7 @@
+SymInfo [SymID=101, SymType=int, SymName=a, SymPos=beginLine :3 beginColumn 7 ]
+SymInfo [SymID=102, SymType=int, SymName=b, SymPos=beginLine :3 beginColumn 9 ]
+SymInfo [SymID=103, SymType=int, SymName=c, SymPos=beginLine :3 beginColumn 11 ]
+SymInfo [SymID=104, SymType=int, SymName=a, SymPos=beginLine :4 beginColumn 7 ]
+ArrayInfo [ArrID=101, ArrType=int, ArrName=A, ArrPos=beginLine :5 beginColumn 7 , demons=2, demon1=4, demon2=5]
+ArrayInfo [ArrID=102, ArrType=int, ArrName=B, ArrPos=beginLine :6 beginColumn 7 , demons=2, demon1=5, demon2=4]
+ArrayInfo [ArrID=103, ArrType=int, ArrName=A, ArrPos=beginLine :7 beginColumn 7 , demons=2, demon1=10, demon2=10]

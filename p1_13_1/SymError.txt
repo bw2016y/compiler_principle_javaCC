@@ -1,0 +1,5 @@
+Error: SymInfo [SymID=104, SymType=int, SymName=a, SymPos=beginLine :4 beginColumn 7 ] redeclaration!!
+Error: ArrayInfo [ArrID=103, ArrType=int, ArrName=A, ArrPos=beginLine :7 beginColumn 7 , demons=2, demon1=10, demon2=10] redeclaration!!
+Error: beginLine :10 beginColumn 3  ArrayName--C 2 2 4--  undefined behaviour!!
+Error: beginLine :11 beginColumn 3   variable--d--  undefined behaviour!!
+Error: beginLine :24 beginColumn 7  ArrayName--B 2 2 22--   index overstepped!!
